@@ -2,6 +2,7 @@ import {
   NFTListed as NFTListedEvent,
   NFTSold as NFTSoldEvent
 } from "../generated/NFTMarket/NFTMarket"
+import { store } from "@graphprotocol/graph-ts"
 import { NFTListed, NFTSold, TokenListingState } from "../generated/schema"
 
 
@@ -39,6 +40,9 @@ export function handleNFTSold(event: NFTSoldEvent): void {
     entity.listing = listingState.currentListing
     entity.listedAtTimestamp = listingState.listedAtTimestamp
     entity.listedAtBlockNumber = listingState.listedAtBlockNumber
+
+    // The token is no longer listed, so drop the current-listing record
+    store.remove("TokenListingState", event.params.tokenId.toString())
   }
 
   entity.seller = event.params.seller
