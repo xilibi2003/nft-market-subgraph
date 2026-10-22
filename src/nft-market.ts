@@ -1,23 +1,9 @@
 import {
-  NFTDelisted as NFTDelistedEvent,
   NFTListed as NFTListedEvent,
   NFTSold as NFTSoldEvent
 } from "../generated/NFTMarket/NFTMarket"
-import { NFTDelisted, NFTListed, NFTSold } from "../generated/schema"
+import { NFTListed, NFTSold, TokenListingState } from "../generated/schema"
 
-export function handleNFTDelisted(event: NFTDelistedEvent): void {
-  let entity = new NFTDelisted(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  )
-  entity.tokenId = event.params.tokenId
-  entity.seller = event.params.seller
-
-  entity.blockNumber = event.block.number
-  entity.blockTimestamp = event.block.timestamp
-  entity.transactionHash = event.transaction.hash
-
-  entity.save()
-}
 
 export function handleNFTListed(event: NFTListedEvent): void {
   let entity = new NFTListed(
@@ -32,6 +18,14 @@ export function handleNFTListed(event: NFTListedEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+
+  let listingState = new TokenListingState(event.params.tokenId.toString())
+  listingState.tokenId = event.params.tokenId
+  listingState.currentListing = entity.id
+  listingState.listedAtTimestamp = event.block.timestamp
+  listingState.listedAtBlockNumber = event.block.number
+
+  listingState.save()
 }
 
 export function handleNFTSold(event: NFTSoldEvent): void {
@@ -39,6 +33,14 @@ export function handleNFTSold(event: NFTSoldEvent): void {
     event.transaction.hash.concatI32(event.logIndex.toI32())
   )
   entity.tokenId = event.params.tokenId
+
+  let listingState = TokenListingState.load(event.params.tokenId.toString())
+  if (listingState != null) {
+    entity.listing = listingState.currentListing
+    entity.listedAtTimestamp = listingState.listedAtTimestamp
+    entity.listedAtBlockNumber = listingState.listedAtBlockNumber
+  }
+
   entity.seller = event.params.seller
   entity.buyer = event.params.buyer
   entity.price = event.params.price

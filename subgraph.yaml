@@ -16,15 +16,12 @@ dataSources:
       apiVersion: 0.0.9
       language: wasm/assemblyscript
       entities:
-        - NFTDelisted
         - NFTListed
         - NFTSold
       abis:
         - name: NFTMarket
           file: ./abis/NFTMarket.json
       eventHandlers:
-        - event: NFTDelisted(indexed uint256,indexed address)
-          handler: handleNFTDelisted
         - event: NFTListed(indexed uint256,indexed address,uint256)
           handler: handleNFTListed
         - event: NFTSold(indexed uint256,indexed address,indexed address,uint256)

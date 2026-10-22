@@ -1,25 +1,29 @@
-type NFTDelisted @entity(immutable: true) {
-  id: Bytes!
-  tokenId: BigInt! # uint256
-  seller: Bytes! # address
-  blockNumber: BigInt!
-  blockTimestamp: BigInt!
-  transactionHash: Bytes!
-}
 
 type NFTListed @entity(immutable: true) {
   id: Bytes!
   tokenId: BigInt! # uint256
   seller: Bytes! # address
   price: BigInt! # uint256
+  sale: NFTSold @derivedFrom(field: "listing")
   blockNumber: BigInt!
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
 
+type TokenListingState @entity(immutable: false) {
+  id: ID!
+  tokenId: BigInt! # uint256
+  currentListing: NFTListed!
+  listedAtTimestamp: BigInt!
+  listedAtBlockNumber: BigInt!
+}
+
 type NFTSold @entity(immutable: true) {
   id: Bytes!
   tokenId: BigInt! # uint256
+  listing: NFTListed
+  listedAtTimestamp: BigInt
+  listedAtBlockNumber: BigInt
   seller: Bytes! # address
   buyer: Bytes! # address
   price: BigInt! # uint256
